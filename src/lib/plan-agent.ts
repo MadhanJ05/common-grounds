@@ -296,10 +296,31 @@ async function runOnce(connectionId: string) {
   console.info(`[plan-agent] ${connectionId}: stop=${final.stop_reason} ${used.join(" ").slice(0, 200)}`);
 }
 
+// Spend guard: cap how often Claude runs, per chat and overall, over a rolling 24 hours.
+// Keeps a public demo from running up the API bill if someone spams messages.
+const PER_CHAT_PER_DAY = Number(process.env.AI_RUNS_PER_CHAT_PER_DAY ?? 40);
+const TOTAL_PER_DAY = Number(process.env.AI_RUNS_PER_DAY ?? 500);
+const runLog = new Map<string, number[]>();
+
+function allowRun(connectionId: string) {
+  const dayAgo = Date.now() - 86_400_000;
+  const prune = (key: string) => (runLog.get(key) ?? []).filter((t) => t > dayAgo);
+  const chat = prune(connectionId);
+  const all = prune("*");
+  if (chat.length >= PER_CHAT_PER_DAY || all.length >= TOTAL_PER_DAY) {
+    console.warn(`[plan-agent] daily limit reached (chat ${chat.length}/${PER_CHAT_PER_DAY}, all ${all.length}/${TOTAL_PER_DAY})`);
+    return false;
+  }
+  runLog.set(connectionId, [...chat, Date.now()]);
+  runLog.set("*", [...all, Date.now()]);
+  return true;
+}
+
 // One run at a time per chat; if messages arrive mid-run, run once more afterwards.
 const running = new Map<string, { again: boolean }>();
 
 export async function checkForPlan(connectionId: string) {
+  if (!allowRun(connectionId)) return;
   const state = running.get(connectionId);
   if (state) {
     state.again = true;
