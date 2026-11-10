@@ -1,12 +1,16 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { loginUrl, paypalConfigured } from "@/lib/paypal";
+import { siteUrl } from "@/lib/api";
 
-export async function GET() {
-  if (!paypalConfigured()) {
-    return NextResponse.redirect(new URL("/?error=paypal-not-configured", process.env.APP_URL ?? "http://localhost:3000"));
-  }
-  const state = crypto.randomUUID();
+/**
+ * Starts Log in with PayPal. `?basic=1` asks only for `openid`: used as an automatic retry when
+ * the PayPal app isn't allowed to share profile details (name, email, birthdate).
+ */
+export async function GET(req: Request) {
+  if (!paypalConfigured()) return NextResponse.redirect(siteUrl("/?error=paypal-not-configured"));
+  const basic = new URL(req.url).searchParams.get("basic") === "1";
+  const state = `${crypto.randomUUID()}${basic ? ".basic" : ""}`;
   (await cookies()).set("cg_oauth_state", state, {
     httpOnly: true,
     sameSite: "lax",
@@ -14,6 +18,6 @@ export async function GET() {
     path: "/",
     maxAge: 600,
   });
-  const redirectUri = `${process.env.APP_URL ?? "http://localhost:3000"}/api/auth/paypal/callback`;
-  return NextResponse.redirect(loginUrl(redirectUri, state));
+  const redirectUri = siteUrl("/api/auth/paypal/callback").toString();
+  return NextResponse.redirect(loginUrl(redirectUri, state, basic ? "openid" : undefined));
 }

@@ -187,12 +187,12 @@ const LOGIN_SCOPES =
   process.env.PAYPAL_LOGIN_SCOPES ??
   "openid profile email https://uri.paypal.com/services/paypalattributes";
 
-export function loginUrl(redirectUri: string, state: string) {
+export function loginUrl(redirectUri: string, state: string, scopes = LOGIN_SCOPES) {
   const params = new URLSearchParams({
     flowEntry: "static",
     client_id: process.env.PAYPAL_CLIENT_ID ?? "",
     response_type: "code",
-    scope: LOGIN_SCOPES,
+    scope: scopes,
     redirect_uri: redirectUri,
     state,
   });

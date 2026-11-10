@@ -15,6 +15,17 @@ export async function GET(req: Request) {
   const expected = jar.get("cg_oauth_state")?.value;
   jar.delete("cg_oauth_state");
 
+  // PayPal refused the requested details (e.g. the app isn't allowed to share them): retry with the basics.
+  const oauthError = url.searchParams.get("error");
+  if (oauthError) {
+    console.warn(`[login] PayPal returned error=${oauthError} (${url.searchParams.get("error_description") ?? ""})`);
+    const scopeProblem = `${oauthError} ${url.searchParams.get("error_description") ?? ""}`.toLowerCase().includes("scope");
+    if (scopeProblem && expected && !expected.endsWith(".basic")) {
+      return NextResponse.redirect(new URL("/api/auth/paypal/login?basic=1", appUrl()));
+    }
+    return NextResponse.redirect(new URL("/?error=login-failed", appUrl()));
+  }
+
   if (!code || !state || state !== expected) {
     return NextResponse.redirect(new URL("/?error=login-failed", appUrl()));
   }
