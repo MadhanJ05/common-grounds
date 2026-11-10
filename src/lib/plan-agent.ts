@@ -291,9 +291,28 @@ async function runOnce(connectionId: string) {
     max_iterations: 6,
   });
 
-  const final = await runner.runUntilDone();
-  const used = final.content.filter((b) => b.type === "text").map((b) => ("text" in b ? b.text : ""));
-  console.info(`[plan-agent] ${connectionId}: stop=${final.stop_reason} ${used.join(" ").slice(0, 200)}`);
+  // Iterate turn by turn so we can add up the real token usage (and cost) of the whole run.
+  let inputTokens = 0;
+  let cacheReadTokens = 0;
+  let outputTokens = 0;
+  let turns = 0;
+  for await (const message of runner) {
+    turns += 1;
+    inputTokens += message.usage.input_tokens + (message.usage.cache_creation_input_tokens ?? 0);
+    cacheReadTokens += message.usage.cache_read_input_tokens ?? 0;
+    outputTokens += message.usage.output_tokens;
+  }
+  const final = await runner.done();
+  // Claude Opus 5.5 list prices: $4 / MTok input, $0.20 / MTok cache reads, $20 / MTok output.
+  const costUsd = (inputTokens * 4 + cacheReadTokens * 0.2 + outputTokens * 20) / 1_000_000;
+  const note = final.content
+    .filter((b) => b.type === "text")
+    .map((b) => ("text" in b ? b.text : ""))
+    .join(" ")
+    .slice(0, 160);
+  console.info(
+    `[plan-agent] ${connectionId}: ${turns} turn(s), in=${inputTokens} cached=${cacheReadTokens} out=${outputTokens} ≈ $${costUsd.toFixed(4)} · stop=${final.stop_reason} · ${note}`,
+  );
 }
 
 // Spend guard: cap how often Claude runs, per chat and overall, over a rolling 24 hours.
