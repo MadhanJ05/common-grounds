@@ -56,3 +56,19 @@ body {
 .leaflet-container {
   font-family: var(--font-inter), system-ui, sans-serif;
 }
+
+/* Let PayPal's v6 button web component fill its column. */
+paypal-button {
+  display: block;
+  width: 100%;
+}
+
+/* Soften the OpenStreetMap tiles to match the warm palette. */
+.leaflet-tile-pane {
+  filter: saturate(0.3) sepia(0.18) contrast(0.95) brightness(1.03);
+}
+@media (prefers-color-scheme: dark) {
+  .leaflet-tile-pane {
+    filter: invert(1) hue-rotate(180deg) saturate(0.25) sepia(0.25) brightness(0.85) contrast(0.9);
+  }
+}
