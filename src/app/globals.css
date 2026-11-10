@@ -1,26 +1,58 @@
 @import "tailwindcss";
 
+/* Warm, quiet café palette. Light by default, dark follows the system. */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --bg: #f8f3ec;
+  --surface: #fffdf9;
+  --surface-2: #f1e9de;
+  --ink: #2a1d15;
+  --ink-soft: #6f5d50;
+  --line: #e4d8ca;
+  --accent: #b5562a;
+  --accent-soft: #f6e2d4;
+  --ok: #2f6b4a;
+  --ok-soft: #e1efe6;
+  --warn: #8a5a12;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --bg: #17110d;
+    --surface: #221a14;
+    --surface-2: #2c221b;
+    --ink: #f3e9df;
+    --ink-soft: #b9a798;
+    --line: #3a2e25;
+    --accent: #e08a5a;
+    --accent-soft: #3a2519;
+    --ok: #7fc39b;
+    --ok-soft: #1d2f24;
+    --warn: #e0b46a;
   }
 }
 
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-line: var(--line);
+  --color-accent: var(--accent);
+  --color-accent-soft: var(--accent-soft);
+  --color-ok: var(--ok);
+  --color-ok-soft: var(--ok-soft);
+  --color-warn: var(--warn);
+  --font-sans: var(--font-inter);
+  --font-serif: var(--font-fraunces);
+}
+
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-inter), system-ui, sans-serif;
+}
+
+.leaflet-container {
+  font-family: var(--font-inter), system-ui, sans-serif;
 }
