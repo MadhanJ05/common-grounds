@@ -38,6 +38,11 @@ export function withUser<C>(handler: (req: Request, user: User, ctx: C) => Promi
   };
 }
 
+/** Absolute URL on the public site. Behind Render's proxy, `req.url` is an internal address, so use APP_URL. */
+export function siteUrl(path: string) {
+  return new URL(path, process.env.APP_URL ?? "http://localhost:3000");
+}
+
 export async function readJson<T>(req: Request): Promise<T> {
   try {
     return (await req.json()) as T;

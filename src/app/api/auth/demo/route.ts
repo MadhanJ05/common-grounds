@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { and, eq, like } from "drizzle-orm";
 import { db, users } from "@/db";
 import { startSession } from "@/lib/session";
+import { siteUrl } from "@/lib/api";
 
 /** Sign in as a seeded demo person (Sam, Alex). Disabled when DEMO_LOGIN=false. */
 export async function POST(req: Request) {
@@ -15,5 +16,5 @@ export async function POST(req: Request) {
     .limit(1);
   if (!u) return NextResponse.json({ error: "NOT_FOUND" }, { status: 404 });
   await startSession(u.id);
-  return NextResponse.redirect(new URL("/home", req.url), { status: 303 });
+  return NextResponse.redirect(siteUrl("/home"), { status: 303 });
 }

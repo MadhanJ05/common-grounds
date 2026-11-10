@@ -28,26 +28,33 @@ export function Chat({
   const bottom = useRef<HTMLDivElement>(null);
   const lastCount = useRef(0);
 
+  const known = useRef(cafes);
+
   const load = useCallback(async () => {
     const res = await fetch(`/api/chats/${connectionId}`, { cache: "no-store" });
     if (!res.ok) return;
     const data = await res.json();
     setMsgs(data.messages);
     setTreats(data.treats);
-    const missing = (data.treats as TreatView[]).map((t) => t.cafeId).filter((id) => !(id in cafeNames));
+    const missing = (data.treats as TreatView[]).map((t) => t.cafeId).filter((id) => !(id in known.current));
     if (missing.length) {
       const r = await fetch(`/api/cafes-lookup?ids=${missing.join(",")}`);
       if (r.ok) {
         const extra: Record<string, string> = await r.json();
-        setCafeNames((prev) => ({ ...prev, ...extra }));
+        known.current = { ...known.current, ...extra };
+        setCafeNames(known.current);
       }
     }
-  }, [connectionId, cafeNames]);
+  }, [connectionId]);
 
   useEffect(() => {
-    load();
+    // First load right away (as a timer, so state isn't set synchronously in the effect), then poll.
+    const first = setTimeout(load, 0);
     const t = setInterval(load, POLL_MS);
-    return () => clearInterval(t);
+    return () => {
+      clearTimeout(first);
+      clearInterval(t);
+    };
   }, [load]);
 
   // Claude reads in the background for a few seconds after each message; show a quiet hint meanwhile.
