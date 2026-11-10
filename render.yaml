@@ -1,0 +1,41 @@
+# Render Blueprint: one Node web service + one Postgres database.
+# Deploy: Render dashboard → New → Blueprint → pick this repo, then fill in the secret env vars.
+databases:
+  - name: common-grounds-db
+    plan: basic-256mb
+    databaseName: common_grounds
+    user: common_grounds
+
+services:
+  - type: web
+    name: common-grounds
+    runtime: node
+    plan: starter
+    buildCommand: corepack enable && pnpm install --frozen-lockfile && pnpm build
+    preDeployCommand: pnpm db:migrate && pnpm db:seed
+    startCommand: pnpm start
+    healthCheckPath: /
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: DATABASE_URL
+        fromDatabase:
+          name: common-grounds-db
+          property: connectionString
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: PAYPAL_ENVIRONMENT
+        value: sandbox
+      - key: DEMO_LOGIN
+        value: "true"
+      # Fill these in on Render (never commit them):
+      - key: APP_URL
+        sync: false
+      - key: PAYPAL_CLIENT_ID
+        sync: false
+      - key: PAYPAL_CLIENT_SECRET
+        sync: false
+      - key: NEXT_PUBLIC_PAYPAL_CLIENT_ID
+        sync: false
+      - key: ANTHROPIC_API_KEY
+        sync: false
