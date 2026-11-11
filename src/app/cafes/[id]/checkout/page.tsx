@@ -6,6 +6,7 @@ import { Checkout } from "@/components/Checkout";
 import { circleAccess, displayName } from "@/lib/circle";
 import { cardComplete, currentUser } from "@/lib/session";
 import { treatsToRedeem } from "@/lib/treats";
+import { SANDBOX_BUYER } from "@/lib/demo";
 
 export default async function CafeCheckout(props: PageProps<"/cafes/[id]/checkout">) {
   const user = await currentUser();
@@ -25,7 +26,8 @@ export default async function CafeCheckout(props: PageProps<"/cafes/[id]/checkou
     <Shell back={{ href: `/cafes/${cafe.id}`, label: cafe.name }}>
       <div className="mb-5 rounded-2xl border border-dashed border-line px-4 py-3 text-xs text-ink-soft">
         This screen stands in for the café&apos;s own checkout (a counter tablet or a QR code at the till). Payments
-        run in the PayPal sandbox.
+        run in the PayPal sandbox. Test buyer: <span className="font-mono">{SANDBOX_BUYER.email}</span> /{" "}
+        <span className="font-mono">{SANDBOX_BUYER.password}</span>
       </div>
       <Checkout
         cafe={{ id: cafe.id, name: cafe.name, acceptsPaypal: cafe.acceptsPaypal, menu: cafe.menu }}

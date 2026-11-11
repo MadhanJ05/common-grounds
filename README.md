@@ -69,7 +69,14 @@ PayPal's Agent Toolkit was considered, but it has no authorize, capture or void 
 4. Say hi to Alex (Alex is already in Ember & Oat's circle; Sam can join it the same way). Once both say hi, a chat opens.
 5. Chat like a person ("coffee tmrw after my 10am? the place on Main" / "perfect"). In a few seconds a **Coffee's on me** card appears. Tap PayPal to treat (a hold), then as Alex: **Accept → Go to checkout → Pick it up** (a capture).
 
-**PayPal sandbox buyer:** _email and password added before submission_. This is PayPal's test buyer with fake money. Don't use a real PayPal account.
+**PayPal sandbox buyer** (fake account and fake money, for the PayPal popup):
+
+| | |
+|---|---|
+| Email | `sb-4741oh53850290@personal.example.com` |
+| Password | `CommonGrounds2026!` |
+
+In the PayPal window, enter the email, click **Next**, and log in. Don't use "Pay with debit or credit card", and don't use a real PayPal account.
 
 The other sample people (Quiet Fox, Tess, Juniper and so on) are fictional. They say hi back automatically, so you can reach a chat alone.
 

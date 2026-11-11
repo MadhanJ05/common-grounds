@@ -3,6 +3,7 @@ import { like } from "drizzle-orm";
 import { db, users } from "@/db";
 import { Brand } from "@/components/Shell";
 import { cardComplete, currentUser } from "@/lib/session";
+import { SANDBOX_BUYER } from "@/lib/demo";
 
 export default async function Landing(props: PageProps<"/">) {
   const user = await currentUser();
@@ -85,6 +86,11 @@ export default async function Landing(props: PageProps<"/">) {
                 </button>
               </form>
             ))}
+          </div>
+          <div className="mt-4 rounded-xl bg-surface-2 p-3 text-xs">
+            <p className="font-medium">PayPal sandbox test buyer (fake money)</p>
+            <p className="mt-1 font-mono text-ink-soft">{SANDBOX_BUYER.email}</p>
+            <p className="font-mono text-ink-soft">{SANDBOX_BUYER.password}</p>
           </div>
         </div>
       )}
