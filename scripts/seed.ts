@@ -5,10 +5,10 @@
  *   pnpm db:seed
  */
 import { drizzle } from "drizzle-orm/postgres-js";
-import { eq, inArray } from "drizzle-orm";
+import { eq, inArray, or } from "drizzle-orm";
 import postgres from "postgres";
 import * as schema from "../src/db/schema";
-import { cafes, users, visits, type MenuItem } from "../src/db/schema";
+import { cafes, connections, hellos, messages, treats, users, visits, type MenuItem } from "../src/db/schema";
 
 const url = process.env.DATABASE_URL ?? "postgres://localhost:5432/common_grounds";
 const client = postgres(url, { max: 1, ssl: url.includes(".render.com") ? "require" : false });
@@ -262,6 +262,20 @@ async function main() {
   }
 
   const ids = PEOPLE.map((p) => p.id);
+
+  // Fresh slate for the seeded people: their hellos, chats and treats, so Sam and Alex meet from scratch
+  // on every deploy (the demo video and judges start from the same state).
+  const conns = await db
+    .select({ id: connections.id })
+    .from(connections)
+    .where(or(inArray(connections.userA, ids), inArray(connections.userB, ids)));
+  const connIds = conns.map((c) => c.id);
+  if (connIds.length) {
+    await db.delete(treats).where(inArray(treats.connectionId, connIds));
+    await db.delete(messages).where(inArray(messages.connectionId, connIds));
+    await db.delete(connections).where(inArray(connections.id, connIds));
+  }
+  await db.delete(hellos).where(or(inArray(hellos.fromUserId, ids), inArray(hellos.toUserId, ids)));
   // Reset the seeded people's purchases so the "hours ago" stay fresh on every seed.
   await db.delete(visits).where(inArray(visits.userId, ids));
 
